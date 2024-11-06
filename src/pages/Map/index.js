@@ -6,6 +6,7 @@ import L from 'leaflet';
 import { restaurants, DEFAULT_CENTER, DEFAULT_ZOOM } from './restaurantData';
 import { RouteComponent } from './RouteComponent';
 import { RestaurantPopup } from './RestaurantPopup';
+import { FilterMenu } from './FilterMenu';
 
 // Fix for default marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -15,12 +16,21 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
 
-// Component để cập nhật center của map
 function ChangeView({ center, zoom }) {
   const map = useMap();
   map.setView(center, zoom);
   return null;
 }
+
+// Helper function to extract numeric price from price range string
+const getAveragePrice = (priceRange) => {
+  const prices = priceRange.match(/\d+,\d+/g);
+  if (!prices) return 0;
+  const numericPrices = prices.map(price => 
+    parseInt(price.replace(',', ''))
+  );
+  return (numericPrices[0] + numericPrices[1]) / 2;
+};
 
 const MapComponent = () => {
   const [userLocation, setUserLocation] = useState(null);
@@ -29,8 +39,12 @@ const MapComponent = () => {
   const [isLocating, setIsLocating] = useState(false);
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [showRoute, setShowRoute] = useState(false);
+  
+  // Filter states
+  const [selectedTypes, setSelectedTypes] = useState(['all']);
+  const [priceRange, setPriceRange] = useState('all');
+  const [minRating, setMinRating] = useState(0);
 
-  // Xử lý khi click vào nút location
   const handleLocationClick = () => {
     if (isLocating) return;
 
@@ -63,6 +77,66 @@ const MapComponent = () => {
     setShowRoute(true);
   };
 
+  const handleTypeChange = (typeId) => {
+    setSelectedTypes(prev => {
+      if (typeId === 'all') {
+        return ['all'];
+      }
+      const newTypes = prev.filter(t => t !== 'all');
+      if (prev.includes(typeId)) {
+        return newTypes.filter(t => t !== typeId);
+      } else {
+        return [...newTypes, typeId];
+      }
+    });
+  };
+
+  const handlePriceRangeChange = (range) => {
+    setPriceRange(range);
+  };
+
+  const handleRatingChange = (rating) => {
+    setMinRating(Number(rating));
+  };
+
+  const handleClearFilters = () => {
+    setSelectedTypes(['all']);
+    setPriceRange('all');
+    setMinRating(0);
+  };
+
+  // Filter restaurants based on all criteria
+  const filteredRestaurants = restaurants.filter(restaurant => {
+    // Filter by cuisine type
+    if (!selectedTypes.includes('all') && 
+        !restaurant.cuisineTypes.some(type => selectedTypes.includes(type))) {
+      return false;
+    }
+
+    // Filter by rating
+    if (restaurant.rating < minRating) {
+      return false;
+    }
+
+    // Filter by price range
+    if (priceRange !== 'all') {
+      const avgPrice = getAveragePrice(restaurant.priceRange);
+      switch (priceRange) {
+        case 'cheap':
+          if (avgPrice > 50000) return false;
+          break;
+        case 'medium':
+          if (avgPrice <= 50000 || avgPrice > 100000) return false;
+          break;
+        case 'expensive':
+          if (avgPrice <= 100000) return false;
+          break;
+      }
+    }
+
+    return true;
+  });
+
   return (
     <div style={{ 
       height: "100vh", 
@@ -92,6 +166,17 @@ const MapComponent = () => {
         </button>
       </div>
 
+      {/* Filter Menu */}
+      <FilterMenu 
+        selectedTypes={selectedTypes}
+        onTypeChange={handleTypeChange}
+        priceRange={priceRange}
+        onPriceRangeChange={handlePriceRangeChange}
+        minRating={minRating}
+        onRatingChange={handleRatingChange}
+        onClearFilters={handleClearFilters}
+      />
+
       {/* Map */}
       <MapContainer 
         center={mapCenter}
@@ -105,7 +190,6 @@ const MapComponent = () => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         
-        {/* Marker vị trí người dùng */}
         {userLocation && (
           <Marker position={[userLocation.lat, userLocation.lng]}>
             <Popup>
@@ -114,8 +198,7 @@ const MapComponent = () => {
           </Marker>
         )}
 
-        {/* Markers nhà hàng */}
-        {restaurants.map(restaurant => (
+        {filteredRestaurants.map(restaurant => (
           <Marker 
             key={restaurant.id} 
             position={restaurant.position}
@@ -129,7 +212,6 @@ const MapComponent = () => {
           </Marker>
         ))}
 
-        {/* Route */}
         {showRoute && selectedRestaurant && userLocation && (
           <RouteComponent 
             start={userLocation}

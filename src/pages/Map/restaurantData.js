@@ -1,41 +1,215 @@
 export const restaurants = [
-    {
-      id: 1,
-      name: "Phở Thìn Bờ Hồ",
-      position: [21.0243, 105.8522],
-      address: "13 Lò Đúc, Hai Bà Trưng, Hà Nội",
-      phone: "024 3821 2709",
-      rating: 4.5,
-      description: "Phở bò truyền thống nổi tiếng Hà Nội",
-      openTime: "6:00 - 22:00",
-      priceRange: "35,000đ - 70,000đ",
-      type: "Phở"
-    },
-    {
-      id: 2,
-      name: "Bún Chả Hương Liên",
-      position: [21.0197, 105.8502],
-      address: "24 Lê Văn Hưu, Hai Bà Trưng, Hà Nội",
-      phone: "024 3943 4106",
-      rating: 4.7,
-      description: "Nổi tiếng với bún chả và nem rán",
-      openTime: "7:00 - 21:00",
-      priceRange: "40,000đ - 80,000đ",
-      type: "Bún chả"
-    },
-    {
-      id: 3,
-      name: "Bánh Cuốn Bà Hoành",
-      position: [21.0183, 105.8476],
-      address: "66 Tô Hiến Thành, Hai Bà Trưng, Hà Nội",
-      phone: "024 3945 4677",
-      rating: 4.6,
-      description: "Bánh cuốn nóng truyền thống",
-      openTime: "6:30 - 21:30",
-      priceRange: "30,000đ - 50,000đ",
-      type: "Bánh cuốn"
-    }
-  ];
-  
-  export const DEFAULT_CENTER = [21.0285, 105.8542]; // Hà Nội
-  export const DEFAULT_ZOOM = 13;
+  {
+    id: 1,
+    name: "Phở Thìn Bờ Hồ",
+    position: [21.0243, 105.8522],
+    address: "13 Lò Đúc, Hai Bà Trưng, Hà Nội",
+    phone: "024 3821 2709",
+    rating: 4.5,
+    description: "Phở bò truyền thống nổi tiếng Hà Nội",
+    openTime: "6:00 - 22:00",
+    priceRange: "35,000đ - 70,000đ",
+    type: "Phở",
+    cuisineTypes: ["vietnamese", "noodles"]
+  },
+  {
+    id: 2,
+    name: "Bún Chả Hương Liên",
+    position: [21.0197, 105.8502],
+    address: "24 Lê Văn Hưu, Hai Bà Trưng, Hà Nội",
+    phone: "024 3943 4106",
+    rating: 4.7,
+    description: "Nổi tiếng với bún chả và nem rán",
+    openTime: "7:00 - 21:00",
+    priceRange: "40,000đ - 80,000đ",
+    type: "Bún chả",
+    cuisineTypes: ["vietnamese", "noodles", "streetfood"]
+  },
+  {
+    id: 3,
+    name: "Bánh Cuốn Bà Hoành",
+    position: [21.0183, 105.8476],
+    address: "66 Tô Hiến Thành, Hai Bà Trưng, Hà Nội",
+    phone: "024 3945 4677",
+    rating: 4.6,
+    description: "Bánh cuốn nóng truyền thống",
+    openTime: "6:30 - 21:30",
+    priceRange: "30,000đ - 50,000đ",
+    type: "Bánh cuốn",
+    cuisineTypes: ["vietnamese", "streetfood", "rice"]
+  },
+  {
+    id: 4,
+    name: "Chả Cá Lã Vọng",
+    position: [21.0357, 105.8486],
+    address: "14 Chả Cá, Hoàn Kiếm, Hà Nội",
+    phone: "024 3825 3929",
+    rating: 4.4,
+    description: "Chả cá truyền thống từ năm 1871",
+    openTime: "11:00 - 21:30",
+    priceRange: "150,000đ - 300,000đ",
+    type: "Chả cá",
+    cuisineTypes: ["vietnamese", "rice", "traditional"]
+  },
+  {
+    id: 5,
+    name: "Bánh Mì 25 Hàng Cá",
+    position: [21.0382, 105.8501],
+    address: "25 Hàng Cá, Hoàn Kiếm, Hà Nội",
+    phone: "097 229 6635",
+    rating: 4.8,
+    description: "Bánh mì giòn thơm nổi tiếng phố cổ",
+    openTime: "6:00 - 19:30",
+    priceRange: "15,000đ - 30,000đ",
+    type: "Bánh mì",
+    cuisineTypes: ["vietnamese", "streetfood", "breakfast"]
+  },
+  {
+    id: 6,
+    name: "Bún Riêu Cua Bắc Cạn",
+    position: [21.0225, 105.8471],
+    address: "11 Hàng Bạc, Hoàn Kiếm, Hà Nội",
+    phone: "098 884 4012",
+    rating: 4.6,
+    description: "Bún riêu cua đậm đà hương vị",
+    openTime: "6:30 - 21:00",
+    priceRange: "35,000đ - 55,000đ",
+    type: "Bún riêu",
+    cuisineTypes: ["vietnamese", "noodles", "seafood"]
+  },
+  {
+    id: 7,
+    name: "Xôi Yến",
+    position: [21.0351, 105.8469],
+    address: "35B Nguyễn Hữu Huân, Hoàn Kiếm, Hà Nội",
+    phone: "024 3926 3427",
+    rating: 4.5,
+    description: "Xôi xéo, xôi thập cẩm nổi tiếng",
+    openTime: "5:00 - 14:00",
+    priceRange: "20,000đ - 45,000đ",
+    type: "Xôi",
+    cuisineTypes: ["vietnamese", "rice", "breakfast", "streetfood"]
+  },
+  {
+    id: 8,
+    name: "Bún Đậu Mắm Tôm Đội Cấn",
+    position: [21.0354, 105.8233],
+    address: "29 Đội Cấn, Ba Đình, Hà Nội",
+    phone: "097 663 9943",
+    rating: 4.7,
+    description: "Bún đậu mắm tôm truyền thống",
+    openTime: "10:00 - 20:00",
+    priceRange: "40,000đ - 80,000đ",
+    type: "Bún đậu",
+    cuisineTypes: ["vietnamese", "noodles", "streetfood"]
+  },
+  {
+    id: 9,
+    name: "Phở Cuốn Hương Mai",
+    position: [21.0456, 105.8473],
+    address: "25 Ngũ Xã, Ba Đình, Hà Nội",
+    phone: "024 3715 2679",
+    rating: 4.6,
+    description: "Phở cuốn, phở chiên phồng",
+    openTime: "9:00 - 21:30",
+    priceRange: "45,000đ - 90,000đ",
+    type: "Phở cuốn",
+    cuisineTypes: ["vietnamese", "rice", "streetfood"]
+  },
+  {
+    id: 10,
+    name: "Bia Hơi Hà Nội",
+    position: [21.0352, 105.8507],
+    address: "22 Hàng Tre, Hoàn Kiếm, Hà Nội",
+    phone: "024 3826 7943",
+    rating: 4.4,
+    description: "Bia hơi và đồ nhắm đặc trưng",
+    openTime: "11:00 - 23:00",
+    priceRange: "20,000đ - 150,000đ",
+    type: "Bia hơi",
+    cuisineTypes: ["drinks", "snacks", "traditional"]
+  },
+  {
+    id: 11,
+    name: "Cà Phê Giảng",
+    position: [21.0351, 105.8479],
+    address: "39 Nguyễn Hữu Huân, Hoàn Kiếm, Hà Nội",
+    phone: "098 989 2298",
+    rating: 4.8,
+    description: "Cà phê trứng nổi tiếng",
+    openTime: "7:00 - 22:00",
+    priceRange: "20,000đ - 50,000đ",
+    type: "Cà phê",
+    cuisineTypes: ["drinks", "vietnamese", "traditional"]
+  },
+  {
+    id: 12,
+    name: "Bánh Tôm Hồ Tây",
+    position: [21.0580, 105.8234],
+    address: "1 Thanh Niên, Tây Hồ, Hà Nội",
+    phone: "024 3829 3253",
+    rating: 4.5,
+    description: "Bánh tôm giòn rụm view Hồ Tây",
+    openTime: "10:00 - 22:00",
+    priceRange: "50,000đ - 100,000đ",
+    type: "Bánh tôm",
+    cuisineTypes: ["vietnamese", "streetfood", "seafood"]
+  },
+  {
+    id: 13,
+    name: "Bột Chiên Hàng Gai",
+    position: [21.0336, 105.8485],
+    address: "72 Hàng Gai, Hoàn Kiếm, Hà Nội",
+    phone: "098 765 4321",
+    rating: 4.3,
+    description: "Bột chiên giòn thơm",
+    openTime: "14:00 - 22:00",
+    priceRange: "25,000đ - 45,000đ",
+    type: "Bột chiên",
+    cuisineTypes: ["streetfood", "snacks"]
+  },
+  {
+    id: 14,
+    name: "Mỳ Vằn Thắn Đinh Liệt",
+    position: [21.0334, 105.8515],
+    address: "24 Đinh Liệt, Hoàn Kiếm, Hà Nội",
+    phone: "024 3825 7338",
+    rating: 4.6,
+    description: "Mỳ vằn thắn công thức Hong Kong",
+    openTime: "7:00 - 22:00",
+    priceRange: "35,000đ - 65,000đ",
+    type: "Mỳ",
+    cuisineTypes: ["noodles", "chinese"]
+  },
+  {
+    id: 15,
+    name: "Nem Cua Bể Hải Phòng",
+    position: [21.0228, 105.8573],
+    address: "55 Trần Xuân Soạn, Hai Bà Trưng, Hà Nội",
+    phone: "024 3939 2544",
+    rating: 4.7,
+    description: "Nem cua bể truyền thống Hải Phòng",
+    openTime: "8:00 - 21:00",
+    priceRange: "60,000đ - 120,000đ",
+    type: "Nem",
+    cuisineTypes: ["vietnamese", "seafood", "traditional"]
+  }
+];
+
+export const DEFAULT_CENTER = [21.0285, 105.8542]; // Hà Nội
+export const DEFAULT_ZOOM = 13;
+
+// Danh sách tất cả các loại ẩm thực có thể có
+export const CUISINE_TYPES = [
+  { id: 'all', label: 'Tất cả' },
+  { id: 'vietnamese', label: 'Ẩm thực Việt Nam' },
+  { id: 'streetfood', label: 'Đồ ăn vỉa hè' },
+  { id: 'noodles', label: 'Mì & Bún' },
+  { id: 'rice', label: 'Cơm & Xôi' },
+  { id: 'drinks', label: 'Đồ uống' },
+  { id: 'breakfast', label: 'Ăn sáng' },
+  { id: 'seafood', label: 'Hải sản' },
+  { id: 'snacks', label: 'Đồ ăn vặt' },
+  { id: 'traditional', label: 'Món ăn truyền thống' },
+  { id: 'chinese', label: 'Ẩm thực Trung Hoa' }
+];
