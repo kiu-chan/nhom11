@@ -7,6 +7,7 @@ import { restaurants, DEFAULT_CENTER, DEFAULT_ZOOM } from './restaurantData';
 import { RouteComponent } from './RouteComponent';
 import { RestaurantPopup } from './RestaurantPopup';
 import { FilterMenu } from './FilterMenu';
+import SearchBar from './SearchBar';
 
 // Fix for default marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -105,6 +106,15 @@ const MapComponent = () => {
     setMinRating(0);
   };
 
+  const handleSelectRestaurant = (restaurant) => {
+    setMapCenter(restaurant.position);
+    setMapZoom(18);
+    // Tạo một timeout ngắn để đảm bảo map đã di chuyển đến vị trí mới
+    setTimeout(() => {
+      setSelectedRestaurant(restaurant);
+    }, 100);
+  };
+
   // Filter restaurants based on all criteria
   const filteredRestaurants = restaurants.filter(restaurant => {
     // Filter by cuisine type
@@ -145,7 +155,13 @@ const MapComponent = () => {
       top: 0,
       left: 0
     }}>
-      {/* Nút location */}
+      {/* SearchBar */}
+      <SearchBar 
+        restaurants={restaurants}
+        onSelectRestaurant={handleSelectRestaurant}
+      />
+
+      {/* Location button */}
       <div 
         style={{
           position: 'absolute',
