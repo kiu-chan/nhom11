@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import { MapPin } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { restaurants, DEFAULT_CENTER, DEFAULT_ZOOM } from './restaurantData';
-import { RouteComponent } from './RouteComponent';
-import { RestaurantPopup } from './RestaurantPopup';
+import { AppLayout } from './AppLayout';
+import { SearchBar } from './SearchBar';
 import { FilterMenu } from './FilterMenu';
-import SearchBar from './SearchBar';
+import { LocationButton } from './LocationButton';
+import { RestaurantPopup } from './RestaurantPopup';
+import { RouteComponent } from './RouteComponent';
+import { restaurants, DEFAULT_CENTER, DEFAULT_ZOOM, CUISINE_TYPES } from './restaurantData';
 
 // Fix for default marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -17,23 +18,8 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
 
-function ChangeView({ center, zoom }) {
-  const map = useMap();
-  map.setView(center, zoom);
-  return null;
-}
-
-// Helper function to extract numeric price from price range string
-const getAveragePrice = (priceRange) => {
-  const prices = priceRange.match(/\d+,\d+/g);
-  if (!prices) return 0;
-  const numericPrices = prices.map(price => 
-    parseInt(price.replace(',', ''))
-  );
-  return (numericPrices[0] + numericPrices[1]) / 2;
-};
-
 const MapComponent = () => {
+  // State
   const [userLocation, setUserLocation] = useState(null);
   const [mapCenter, setMapCenter] = useState(DEFAULT_CENTER);
   const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
@@ -46,7 +32,8 @@ const MapComponent = () => {
   const [priceRange, setPriceRange] = useState('all');
   const [minRating, setMinRating] = useState(0);
 
-  const handleLocationClick = () => {
+  // Handlers
+  const handleLocationClick = useCallback(() => {
     if (isLocating) return;
 
     if ("geolocation" in navigator) {
@@ -68,54 +55,34 @@ const MapComponent = () => {
         }
       );
     }
-  };
+  }, [isLocating]);
 
-  const handleDirectionsClick = (restaurant) => {
+  const handleDirectionsClick = useCallback((restaurant) => {
     if (!userLocation) {
       handleLocationClick();
     }
     setSelectedRestaurant(restaurant);
     setShowRoute(true);
-  };
+  }, [userLocation, handleLocationClick]);
 
-  const handleTypeChange = (typeId) => {
+  const handleTypeChange = useCallback((typeId) => {
     setSelectedTypes(prev => {
-      if (typeId === 'all') {
-        return ['all'];
-      }
+      if (typeId === 'all') return ['all'];
       const newTypes = prev.filter(t => t !== 'all');
       if (prev.includes(typeId)) {
         return newTypes.filter(t => t !== typeId);
-      } else {
-        return [...newTypes, typeId];
       }
+      return [...newTypes, typeId];
     });
-  };
+  }, []);
 
-  const handlePriceRangeChange = (range) => {
-    setPriceRange(range);
-  };
-
-  const handleRatingChange = (rating) => {
-    setMinRating(Number(rating));
-  };
-
-  const handleClearFilters = () => {
-    setSelectedTypes(['all']);
-    setPriceRange('all');
-    setMinRating(0);
-  };
-
-  const handleSelectRestaurant = (restaurant) => {
+  const handleSelectRestaurant = useCallback((restaurant) => {
     setMapCenter(restaurant.position);
     setMapZoom(18);
-    // Tạo một timeout ngắn để đảm bảo map đã di chuyển đến vị trí mới
-    setTimeout(() => {
-      setSelectedRestaurant(restaurant);
-    }, 100);
-  };
+    setSelectedRestaurant(restaurant);
+  }, []);
 
-  // Filter restaurants based on all criteria
+  // Filter restaurants
   const filteredRestaurants = restaurants.filter(restaurant => {
     // Filter by cuisine type
     if (!selectedTypes.includes('all') && 
@@ -130,112 +97,99 @@ const MapComponent = () => {
 
     // Filter by price range
     if (priceRange !== 'all') {
-      const avgPrice = getAveragePrice(restaurant.priceRange);
-      switch (priceRange) {
-        case 'cheap':
-          if (avgPrice > 50000) return false;
-          break;
-        case 'medium':
-          if (avgPrice <= 50000 || avgPrice > 100000) return false;
-          break;
-        case 'expensive':
-          if (avgPrice <= 100000) return false;
-          break;
-      }
+      const priceRanges = {
+        cheap: { max: 50000 },
+        medium: { min: 50000, max: 100000 },
+        expensive: { min: 100000 }
+      };
+      const range = priceRanges[priceRange];
+      const [min, max] = restaurant.priceRange
+        .match(/\d+,\d+/g)
+        .map(price => parseInt(price.replace(',', '')));
+      const avgPrice = (min + max) / 2;
+
+      if (range.max && avgPrice > range.max) return false;
+      if (range.min && avgPrice < range.min) return false;
     }
 
     return true;
   });
 
-  return (
-    <div style={{ 
-      height: "100vh", 
-      width: "100vw",
-      position: "fixed",
-      top: 0,
-      left: 0
-    }}>
-      {/* SearchBar */}
-      <SearchBar 
-        restaurants={restaurants}
-        onSelectRestaurant={handleSelectRestaurant}
+  // Map instance
+  const map = (
+    <MapContainer 
+      center={mapCenter}
+      zoom={mapZoom} 
+      className="w-full h-full"
+    >
+      <TileLayer
+        url="https://tmdt.fimo.edu.vn/hot/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       />
+      
+      {userLocation && (
+        <Marker position={[userLocation.lat, userLocation.lng]}>
+          <Popup>
+            <div className="font-medium">Vị trí của bạn</div>
+          </Popup>
+        </Marker>
+      )}
 
-      {/* Location button */}
-      <div 
-        style={{
-          position: 'absolute',
-          top: '20px',
-          right: '20px',
-          zIndex: 1000,
-        }}
-        className="bg-white rounded-lg shadow-lg"
-      >
-        <button
-          onClick={handleLocationClick}
-          disabled={isLocating}
-          className={`p-3 rounded-lg transition-colors duration-200 flex items-center justify-center
-            ${isLocating ? 'bg-gray-100 cursor-not-allowed' : 'hover:bg-gray-100'}`}
-          title="Vị trí của bạn"
+      {filteredRestaurants.map(restaurant => (
+        <Marker 
+          key={restaurant.id} 
+          position={restaurant.position}
         >
-          <MapPin className={`w-6 h-6 ${isLocating ? 'text-gray-400' : 'text-gray-700'}`} />
-        </button>
-      </div>
+          <Popup>
+            <RestaurantPopup 
+              restaurant={restaurant}
+              onDirectionsClick={() => handleDirectionsClick(restaurant)}
+            />
+          </Popup>
+        </Marker>
+      ))}
 
-      {/* Filter Menu */}
-      <FilterMenu 
-        selectedTypes={selectedTypes}
-        onTypeChange={handleTypeChange}
-        priceRange={priceRange}
-        onPriceRangeChange={handlePriceRangeChange}
-        minRating={minRating}
-        onRatingChange={handleRatingChange}
-        onClearFilters={handleClearFilters}
-      />
-
-      {/* Map */}
-      <MapContainer 
-        center={mapCenter}
-        zoom={mapZoom} 
-        style={{ height: "100%", width: "100%" }}
-      >
-        <ChangeView center={mapCenter} zoom={mapZoom} />
-        
-        <TileLayer
-          url="https://tmdt.fimo.edu.vn/hot/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      {showRoute && selectedRestaurant && userLocation && (
+        <RouteComponent 
+          start={userLocation}
+          end={selectedRestaurant.position}
         />
-        
-        {userLocation && (
-          <Marker position={[userLocation.lat, userLocation.lng]}>
-            <Popup>
-              <strong>Vị trí của bạn</strong>
-            </Popup>
-          </Marker>
-        )}
+      )}
+    </MapContainer>
+  );
 
-        {filteredRestaurants.map(restaurant => (
-          <Marker 
-            key={restaurant.id} 
-            position={restaurant.position}
-          >
-            <Popup>
-              <RestaurantPopup 
-                restaurant={restaurant}
-                onDirectionsClick={() => handleDirectionsClick(restaurant)}
-              />
-            </Popup>
-          </Marker>
-        ))}
-
-        {showRoute && selectedRestaurant && userLocation && (
-          <RouteComponent 
-            start={userLocation}
-            end={selectedRestaurant.position}
-          />
-        )}
-      </MapContainer>
-    </div>
+  return (
+    <AppLayout
+      searchBar={
+        <SearchBar 
+          restaurants={restaurants}
+          onSelectRestaurant={handleSelectRestaurant}
+        />
+      }
+      sidebar={
+        <FilterMenu 
+          selectedTypes={selectedTypes}
+          onTypeChange={handleTypeChange}
+          priceRange={priceRange}
+          onPriceRangeChange={setPriceRange}
+          minRating={minRating}
+          onRatingChange={setMinRating}
+          onClearFilters={() => {
+            setSelectedTypes(['all']);
+            setPriceRange('all');
+            setMinRating(0);
+          }}
+          cuisineTypes={CUISINE_TYPES}
+        />
+      }
+      locationButton={
+        <LocationButton 
+          onClick={handleLocationClick}
+          isLocating={isLocating}
+        />
+      }
+      map={map}
+    />
   );
 };
 

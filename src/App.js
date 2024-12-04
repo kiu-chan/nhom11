@@ -1,6 +1,6 @@
 import {BrowserRouter, Routes, Route, Navigate} from "react-router-dom";
 import {publicRoutes} from "./routes";
-
+import './App.css'
 function App() {
   return (
     <BrowserRouter>
